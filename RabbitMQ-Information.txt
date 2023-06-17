@@ -1,0 +1,57 @@
+Working of RabbitMQ:
+The one who wants to send the message (producer) sends it to exchange using some routing key. Then based on some rules (bindings) and routing key, exchange decides which queue to send the message to. Then the queue sends the message to the consumer. The consumer acknowledges that he got the message.
+
+There are 4 types of Exchanges:-
+a) Fanout	b) Direct	c) Topic	d) Headers
+
+a) Fanout Exchange:- Fanout exchanges routes message to all the queues that are bound to it ignoring the routing key.
+
+publisher --->  Fanout --->  Q ------>   consumer ✅️
+		    |----->  Q ------>   ✅️
+Use Cases:-
+i) MMO games can use it for leaderboard updates or other global events
+ii) Sport news sites can use fanout exchanges for distributing score updates to mobile clienrs in near real time.
+iii) Group chats can distribute message within participants.  
+
+
+b) Direct Exchange:- Direct exchanges delivers the message to the queue based on the routing key. Message will be send to those queue whose q_name = routing key. For eg:- purchase = purchase.
+	  purchase 	
+publisher ---------> Direct -------> Q(purchase) ----> consumer ✅️
+			    -------> Q(sold) ----> ✖️	
+			  
+Use Cases:-
+i) Real-time messages to individual players in an MMO game.
+ii) Delivering messages to specific geographical location.
+
+
+c) Topic Exchange:- Topic Exchange routes the message to the queue based on the patterns in the routing key.
+	  customer.purchase.cancel 	
+publisher ------------------------> Topic -------> Q(customer.#) -----------> ✅️
+					  -------> Q(*.purchase.cancel)-----> ✅️
+					  -------> Q(premium.custumer.#) ---> ✖️
+# -> 0 or more words after the hash
+* -> Exactly one word
+
+Use Cases:
+i) Stock price updates.
+ii) News updates that involve categorization or tagging (Only for a sport or a team.
+iii) Distributing data relevant to speicific geographic location, for eg:- points of sale.
+
+
+d) Headers Exchange:- Headers exchanges are like the direct exchanges but here it ignores the routing key and looks for the headers which are sent with the message.
+	   entity:order
+	   action:cancelled
+publisher ----------------> Headers --------> Q(entity:order action:cancelled x.match:all) ---> ✅️ 
+				    --------> Q(entity:order action:confirmed x.match:all) ---> ✖️
+				    --------> Q(entity:order action:confirmed x.match:any) ---> ✅️
+
+Use Cases:-
+i) They can be used as direct exchanges when the routing key doesnot have a string, it can be an integer or a hash.
+ii) Transfer of work between stages in a multi-step window.
+
+ALL IN ALL:
+Broadcasting -------> Fanout Exchange
+Simple Scenarios ---> Direct Exchange
+Complex Scenarios --> Topic Exchange
+Special Filters ----> Headers Exchange
+
